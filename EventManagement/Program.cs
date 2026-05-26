@@ -10,8 +10,13 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
 // EF Core + SQLite
+// ── Fix: always use ContentRootPath so the DB lives in the project folder
+//    regardless of whether the app is launched from Visual Studio, dotnet run,
+//    a published output, or any other working directory. ──────────────────────
+var dbFolder = builder.Environment.ContentRootPath;
+var dbFile   = Path.Combine(dbFolder, "eventmanagement.db");
 builder.Services.AddDbContextFactory<AppDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlite($"Data Source={dbFile}"));
 
 // App services
 builder.Services.AddScoped<SessionService>();
@@ -24,17 +29,17 @@ builder.Services.AddScoped<ParticipantService>();
 
 var app = builder.Build();
 
-// Initialize DB — drop+recreate in Development only to pick up schema changes
+// Initialize DB
+// ── Fix: removed EnsureDeleted() — it was wiping the DB on every restart,
+//    and creating a fresh database at whatever the current working-directory
+//    happened to be (different in VS vs terminal).
+//    Now we only create the schema if it doesn't exist, then seed. ──────────
 using (var scope = app.Services.CreateScope())
 {
     var dbFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<AppDbContext>>();
     using var db = dbFactory.CreateDbContext();
-    if (app.Environment.IsDevelopment())
-    {
-        db.Database.EnsureDeleted();   // drop old schema (dev only)
-    }
-    db.Database.EnsureCreated();       // create schema if not exists
-    await SeedDataAsync(db);
+    db.Database.EnsureCreated();   // create schema if not already present
+    await SeedDataAsync(db);       // seed only if tables are empty (safe to call every start)
 }
 
 if (!app.Environment.IsDevelopment())
