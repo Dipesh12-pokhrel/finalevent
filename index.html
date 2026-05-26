@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EventHub – Event Management System</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0f2240 0%, #1e3a5f 50%, #0a1628 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+    }
+    .card {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 24px;
+      padding: 52px 44px;
+      max-width: 580px;
+      width: 92%;
+      text-align: center;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 30px 60px rgba(0,0,0,0.4);
+    }
+    .logo {
+      font-size: 3rem;
+      font-weight: 900;
+      background: linear-gradient(90deg, #60a5fa 0%, #a78bfa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 6px;
+      letter-spacing: -1px;
+    }
+    .tagline {
+      color: rgba(255,255,255,0.55);
+      font-size: 0.95rem;
+      margin-bottom: 36px;
+      letter-spacing: 0.5px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(52,211,153,0.15);
+      border: 1px solid rgba(52,211,153,0.4);
+      color: #34d399;
+      padding: 8px 22px;
+      border-radius: 50px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      margin-bottom: 30px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+    .dot {
+      width: 8px; height: 8px;
+      background: #34d399;
+      border-radius: 50%;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.3; transform: scale(0.75); }
+    }
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 14px;
+      color: #fff;
+    }
+    p {
+      color: rgba(255,255,255,0.65);
+      line-height: 1.7;
+      margin-bottom: 28px;
+      font-size: 0.95rem;
+    }
+    .features {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 32px;
+      text-align: left;
+    }
+    .feature {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 12px 14px;
+    }
+    .feature-icon { font-size: 1.2rem; margin-bottom: 4px; }
+    .feature-name { font-size: 0.78rem; font-weight: 700; color: #fff; }
+    .feature-desc { font-size: 0.7rem; color: rgba(255,255,255,0.5); margin-top: 2px; }
+    .tech-stack {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      margin-bottom: 30px;
+    }
+    .tech {
+      background: rgba(99,102,241,0.2);
+      border: 1px solid rgba(99,102,241,0.4);
+      color: #a5b4fc;
+      padding: 4px 12px;
+      border-radius: 50px;
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+    .creds {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 14px 20px;
+      margin-bottom: 28px;
+      text-align: left;
+    }
+    .creds-title { font-size: 0.75rem; font-weight: 700; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+    .cred { display: flex; justify-content: space-between; font-size: 0.82rem; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
+    .cred:last-child { border-bottom: none; }
+    .cred-role { color: rgba(255,255,255,0.6); }
+    .cred-val { color: #60a5fa; font-family: monospace; }
+    .btn {
+      display: inline-block;
+      background: linear-gradient(135deg, #3b82f6 0%, #7c3aed 100%);
+      color: #fff;
+      text-decoration: none;
+      padding: 13px 34px;
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      transition: all .2s;
+      margin: 5px;
+      box-shadow: 0 4px 20px rgba(59,130,246,0.4);
+    }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(59,130,246,0.5); }
+    .btn-gh {
+      background: rgba(255,255,255,0.1);
+      box-shadow: none;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .btn-gh:hover { background: rgba(255,255,255,0.15); box-shadow: none; }
+    .footer { margin-top: 26px; font-size: 0.72rem; color: rgba(255,255,255,0.3); }
+    @media(max-width:480px) { .features { grid-template-columns: 1fr 1fr; } .card { padding: 36px 24px; } }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">EventHub</div>
+    <div class="tagline">Full-Stack Event Management System &nbsp;&bull;&nbsp; .NET 8 Blazor Server</div>
+
+    <div class="badge">
+      <div class="dot"></div>
+      Live &amp; Running on Railway
+    </div>
+
+    <h2>Complete Event Management Platform</h2>
+    <p>
+      A feature-rich event management system with admin dashboard, real-time UI,
+      multi-venue support, participant registration, and activity scheduling.
+    </p>
+
+    <div class="features">
+      <div class="feature">
+        <div class="feature-icon">🗓</div>
+        <div class="feature-name">Events</div>
+        <div class="feature-desc">Create &amp; manage events with images</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">📍</div>
+        <div class="feature-name">Venues</div>
+        <div class="feature-desc">Multi-venue support</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🎯</div>
+        <div class="feature-name">Activities</div>
+        <div class="feature-desc">Agenda &amp; schedule</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">👥</div>
+        <div class="feature-name">Registration</div>
+        <div class="feature-desc">Participant tracking</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">⚙️</div>
+        <div class="feature-name">Admin Panel</div>
+        <div class="feature-desc">Full CRUD dashboard</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🔐</div>
+        <div class="feature-name">Auth System</div>
+        <div class="feature-desc">Login &amp; register</div>
+      </div>
+    </div>
+
+    <div class="tech-stack">
+      <span class="tech">.NET 8</span>
+      <span class="tech">Blazor Server</span>
+      <span class="tech">SignalR</span>
+      <span class="tech">Entity Framework Core</span>
+      <span class="tech">SQLite</span>
+      <span class="tech">Bootstrap 5</span>
+      <span class="tech">BCrypt</span>
+      <span class="tech">Docker</span>
+    </div>
+
+    <div class="creds">
+      <div class="creds-title">Demo Login Credentials</div>
+      <div class="cred"><span class="cred-role">Admin</span><span class="cred-val">admin@event.com / Admin@123</span></div>
+      <div class="cred"><span class="cred-role">User</span><span class="cred-val">dipesh@event.com / User@123</span></div>
+    </div>
+
+    <div>
+      <a class="btn" href="https://github.com/Dipesh12-pokhrel/finalevent" target="_blank">
+        &#128196; View Source Code
+      </a>
+    </div>
+
+    <div class="footer">
+      EventHub &copy; 2026 &nbsp;&bull;&nbsp; Built by Dipesh Pokhrel &nbsp;&bull;&nbsp;
+      Deployed on Railway via Docker
+    </div>
+  </div>
+</body>
+</html>

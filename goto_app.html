@@ -1,11 +1,131 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta http-equiv="refresh" content="0; url=http://localhost:5000" />
-  <title>Opening EventHub...</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EventHub – Event Management System</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #1e3a5f 0%, #0f2240 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+    }
+    .card {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 20px;
+      padding: 48px 40px;
+      max-width: 520px;
+      width: 90%;
+      text-align: center;
+      backdrop-filter: blur(12px);
+    }
+    .logo {
+      font-size: 2.8rem;
+      font-weight: 800;
+      background: linear-gradient(90deg, #60a5fa, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+    .tagline { color: rgba(255,255,255,0.6); font-size: 1rem; margin-bottom: 32px; }
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(251,191,36,0.15);
+      border: 1px solid rgba(251,191,36,0.4);
+      color: #fbbf24;
+      padding: 8px 20px;
+      border-radius: 50px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 28px;
+    }
+    .dot {
+      width: 8px; height: 8px;
+      background: #fbbf24;
+      border-radius: 50%;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.8); }
+    }
+    h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: 12px; }
+    p { color: rgba(255,255,255,0.7); line-height: 1.6; margin-bottom: 24px; font-size: 0.95rem; }
+    .features {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 28px;
+      text-align: left;
+    }
+    .feature {
+      background: rgba(255,255,255,0.05);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 0.82rem;
+      color: rgba(255,255,255,0.75);
+    }
+    .feature span { display: block; font-weight: 600; color: #fff; }
+    .btn {
+      display: inline-block;
+      background: linear-gradient(135deg, #3b82f6, #7c3aed);
+      color: #fff;
+      text-decoration: none;
+      padding: 12px 32px;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: opacity .2s;
+      margin: 4px;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn-outline {
+      background: transparent;
+      border: 1.5px solid rgba(255,255,255,0.4);
+    }
+    .footer { margin-top: 24px; font-size: 0.75rem; color: rgba(255,255,255,0.35); }
+  </style>
 </head>
 <body>
-  <p>Opening EventHub at <a href="http://localhost:5000">http://localhost:5000</a>...</p>
-  <script>window.location.href = "http://localhost:5000";</script>
+  <div class="card">
+    <div class="logo">🗓 EventHub</div>
+    <div class="tagline">Event Management System &middot; .NET 8 Blazor Server</div>
+
+    <div class="status-badge">
+      <div class="dot"></div>
+      Live on Railway
+    </div>
+
+    <h2>Full-Stack Event Management</h2>
+    <p>
+      A complete event management platform built with .NET 8 Blazor Server,
+      featuring real-time updates via SignalR, Entity Framework Core, and a rich admin dashboard.
+    </p>
+
+    <div class="features">
+      <div class="feature"><span>Events</span>Create &amp; manage events</div>
+      <div class="feature"><span>Venues</span>Multi-venue support</div>
+      <div class="feature"><span>Activities</span>Agenda management</div>
+      <div class="feature"><span>Registrations</span>Participant tracking</div>
+      <div class="feature"><span>Admin Panel</span>Full CRUD access</div>
+      <div class="feature"><span>Auth</span>Login &amp; registration</div>
+    </div>
+
+    <div>
+      <a class="btn" href="https://github.com/Dipesh12-pokhrel/finalevent" target="_blank">
+        View on GitHub
+      </a>
+    </div>
+
+    <div class="footer">Built with .NET 8 &middot; Blazor Server &middot; Entity Framework Core &middot; SQLite &middot; Bootstrap 5</div>
+  </div>
 </body>
 </html>
