@@ -24,13 +24,16 @@ builder.Services.AddScoped<ParticipantService>();
 
 var app = builder.Build();
 
-// Recreate DB with new schema and fresh seed data
+// Initialize DB — drop+recreate in Development only to pick up schema changes
 using (var scope = app.Services.CreateScope())
 {
     var dbFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<AppDbContext>>();
     using var db = dbFactory.CreateDbContext();
-    db.Database.EnsureDeleted();   // drop old schema
-    db.Database.EnsureCreated();   // create new schema
+    if (app.Environment.IsDevelopment())
+    {
+        db.Database.EnsureDeleted();   // drop old schema (dev only)
+    }
+    db.Database.EnsureCreated();       // create schema if not exists
     await SeedDataAsync(db);
 }
 
