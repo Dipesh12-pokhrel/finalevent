@@ -1,0 +1,73 @@
+@page "/events/delete/{Id:int}"
+@inject EventService EventSvc
+@inject SessionService Session
+@inject NavigationManager Nav
+
+<PageTitle>Delete Event - EventHub</PageTitle>
+
+@if (!Session.IsAdmin)
+{
+    <div class="container mt-5">
+        <div class="alert alert-danger"><i class="fas fa-ban me-2"></i> Access denied.</div>
+    </div>
+}
+else if (ev == null)
+{
+    <div class="container text-center py-5"><div class="spinner-border text-primary"></div></div>
+}
+else
+{
+    <div class="container">
+        <div class="row justify-content-center mt-5">
+            <div class="col-md-6">
+                <div class="card shadow border-danger">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0"><i class="fas fa-trash me-2"></i>Delete Event</h5>
+                    </div>
+                    <div class="card-body p-4 text-center">
+                        <i class="fas fa-exclamation-triangle text-danger fa-3x mb-3"></i>
+                        <h5>Are you sure you want to delete?</h5>
+                        <p class="text-muted">This will permanently delete:</p>
+                        <div class="alert alert-warning text-start">
+                            <strong>@ev.Title</strong><br />
+                            <small>
+                                <i class="fas fa-calendar me-1"></i>@ev.EventDate.ToLocalTime().ToString("MMM dd, yyyy")<br />
+                                <i class="fas fa-users me-1"></i>@ev.Registrations.Count registered attendees
+                            </small>
+                        </div>
+                        <p class="text-danger small"><strong>This action cannot be undone!</strong></p>
+                        <div class="d-flex justify-content-center gap-3 mt-3">
+                            <button class="btn btn-danger" @onclick="HandleDelete" disabled="@isLoading">
+                                @if (isLoading) { <span class="spinner-border spinner-border-sm me-2"></span> }
+                                <i class="fas fa-trash me-1"></i> Yes, Delete
+                            </button>
+                            <a href="/events/@Id" class="btn btn-secondary">
+                                <i class="fas fa-times me-1"></i> Cancel
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+    private Event? ev;
+    private bool isLoading = false;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!Session.IsAuthenticated) { Nav.NavigateTo("/login"); return; }
+        ev = await EventSvc.GetEventByIdAsync(Id);
+        if (ev == null) Nav.NavigateTo("/events");
+    }
+
+    private async Task HandleDelete()
+    {
+        isLoading = true;
+        await EventSvc.DeleteEventAsync(Id);
+        Nav.NavigateTo("/events");
+    }
+}

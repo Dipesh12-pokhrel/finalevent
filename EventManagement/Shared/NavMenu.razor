@@ -1,0 +1,104 @@
+@inject SessionService Session
+@inject NavigationManager Nav
+@implements IDisposable
+
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">
+            <i class="fas fa-calendar-check me-2"></i>EventHub
+        </a>
+        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+</div>
+
+<div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
+    <nav class="flex-column pb-3">
+        <!-- Main -->
+        <div class="sidebar-section">Main</div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <i class="fas fa-home"></i> Home
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="/events">
+                <i class="fas fa-calendar-alt"></i> Events
+            </NavLink>
+        </div>
+
+        @if (Session.IsAuthenticated)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="/my-registrations">
+                    <i class="fas fa-ticket-alt"></i> My Registrations
+                </NavLink>
+            </div>
+        }
+
+        @if (Session.IsAdmin)
+        {
+            <div class="sidebar-section mt-2">Admin</div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="/admin">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="/events/create">
+                    <i class="fas fa-plus-circle"></i> Create Event
+                </NavLink>
+            </div>
+
+            <div class="sidebar-section mt-2">Manage</div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="/admin/participants">
+                    <i class="fas fa-users"></i> Participants
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="/admin/venues">
+                    <i class="fas fa-building"></i> Venues
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="/admin/activities">
+                    <i class="fas fa-tasks"></i> Activities
+                </NavLink>
+            </div>
+        }
+
+        @if (!Session.IsAuthenticated)
+        {
+            <hr class="sidebar-divider" />
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="/login">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="/register">
+                    <i class="fas fa-user-plus"></i> Register
+                </NavLink>
+            </div>
+        }
+    </nav>
+</div>
+
+@code {
+    private bool collapseNavMenu = true;
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    protected override void OnInitialized()
+    {
+        Session.OnChange += StateHasChanged;
+    }
+
+    private void ToggleNavMenu() => collapseNavMenu = !collapseNavMenu;
+
+    public void Dispose()
+    {
+        Session.OnChange -= StateHasChanged;
+    }
+}

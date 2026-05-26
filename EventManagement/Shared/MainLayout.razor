@@ -1,0 +1,78 @@
+@inherits LayoutComponentBase
+@inject SessionService Session
+@inject AuthService AuthSvc
+@inject NavigationManager Nav
+@inject ProtectedLocalStorage Storage
+
+<div class="page">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <main>
+        <div class="top-row">
+            <span class="topbar-brand">
+                <i class="fas fa-calendar-check me-2"></i>EventHub
+            </span>
+            @if (Session.IsAuthenticated)
+            {
+                <div class="d-flex align-items-center gap-3">
+                    <div class="user-badge">
+                        <div class="avatar">@(Session.CurrentUser!.FullName[0].ToString().ToUpper())</div>
+                        <span>@Session.CurrentUser!.FullName</span>
+                        @if (Session.IsAdmin)
+                        {
+                            <span class="badge ms-1" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;font-size:.65rem">
+                                <i class="fas fa-crown me-1"></i>Admin
+                            </span>
+                        }
+                    </div>
+                    <button class="btn btn-sm btn-outline-danger" @onclick="Logout">
+                        <i class="fas fa-sign-out-alt me-1"></i> Logout
+                    </button>
+                </div>
+            }
+            else
+            {
+                <div class="d-flex gap-2">
+                    <a href="/login" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-sign-in-alt me-1"></i> Login
+                    </a>
+                    <a href="/register" class="btn btn-sm btn-primary">
+                        <i class="fas fa-user-plus me-1"></i> Register
+                    </a>
+                </div>
+            }
+        </div>
+
+        <article class="content">
+            @Body
+        </article>
+    </main>
+</div>
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !Session.IsAuthenticated)
+        {
+            try
+            {
+                var result = await Storage.GetAsync<int>("userId");
+                if (result.Success && result.Value > 0)
+                {
+                    var user = await AuthSvc.GetUserByIdAsync(result.Value);
+                    if (user != null) { Session.SetUser(user); StateHasChanged(); }
+                }
+            }
+            catch { /* storage not ready on first prerender */ }
+        }
+    }
+
+    private async Task Logout()
+    {
+        try { await Storage.DeleteAsync("userId"); } catch { }
+        Session.Logout();
+        Nav.NavigateTo("/", true);
+    }
+}

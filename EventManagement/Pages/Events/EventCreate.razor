@@ -1,0 +1,287 @@
+@page "/events/create"
+@inject EventService EventSvc
+@inject VenueService VenueSvc
+@inject ActivityService ActSvc
+@inject SessionService Session
+@inject NavigationManager Nav
+
+<PageTitle>Create Event – EventHub</PageTitle>
+
+@if (!Session.IsAdmin)
+{
+    <div class="container mt-5">
+        <div class="alert alert-danger"><i class="fas fa-ban me-2"></i>Access denied. Admin only.</div>
+    </div>
+}
+else
+{
+    <div class="container">
+        <nav aria-label="breadcrumb" class="mt-2 mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                <li class="breadcrumb-item"><a href="/events">Events</a></li>
+                <li class="breadcrumb-item active">Create</li>
+            </ol>
+        </nav>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-9">
+                <div class="card">
+                    <div class="card-header py-3" style="background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff">
+                        <h5 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Create New Event</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        @if (!string.IsNullOrEmpty(err)) { <div class="alert alert-danger">@err</div> }
+
+                        <EditForm Model="model" OnValidSubmit="HandleCreate">
+                            <DataAnnotationsValidator />
+
+                            <!-- ── Basic Info ─────────────────────────── -->
+                            <h6 class="form-section-title"><i class="fas fa-info-circle me-2 text-primary"></i>Basic Information</h6>
+                            <div class="row g-3 mb-4">
+                                <div class="col-12">
+                                    <label class="form-label">Event Title *</label>
+                                    <InputText class="form-control" @bind-Value="model.Title" placeholder="e.g. Tech Conference 2026" />
+                                    <ValidationMessage For="@(() => model.Title)" class="text-danger small" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Category *</label>
+                                    <InputSelect class="form-select" @bind-Value="model.Category">
+                                        <option>General</option><option>Technology</option>
+                                        <option>Business</option><option>Health</option>
+                                        <option>Education</option><option>Entertainment</option>
+                                    </InputSelect>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Max Capacity *</label>
+                                    <InputNumber class="form-control" @bind-Value="model.MaxCapacity" />
+                                    <ValidationMessage For="@(() => model.MaxCapacity)" class="text-danger small" />
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Location (city)</label>
+                                    <InputText class="form-control" @bind-Value="model.Location" placeholder="e.g. Kathmandu" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Event Date &amp; Time *</label>
+                                    <InputDate Type="InputDateType.DateTimeLocal" class="form-control" @bind-Value="model.EventDate" />
+                                    <ValidationMessage For="@(() => model.EventDate)" class="text-danger small" />
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Description *</label>
+                                    <InputTextArea class="form-control" @bind-Value="model.Description" rows="4" placeholder="Describe the event..." />
+                                    <ValidationMessage For="@(() => model.Description)" class="text-danger small" />
+                                </div>
+                            </div>
+
+                            <!-- ── Media ──────────────────────────────── -->
+                            <h6 class="form-section-title"><i class="fas fa-photo-video me-2 text-primary"></i>Media</h6>
+                            <div class="row g-3 mb-4">
+                                <div class="col-12">
+                                    <label class="form-label">Cover Image URL</label>
+                                    <InputText class="form-control" @bind-Value="model.ImageUrl" @oninput="OnImageUrlChanged"
+                                               placeholder="https://images.unsplash.com/photo-..." />
+                                    <div class="form-text">Paste any image URL (Unsplash, CDN, etc.)</div>
+                                    @if (!string.IsNullOrWhiteSpace(model.ImageUrl))
+                                    {
+                                        <div class="img-preview-wrap mt-2">
+                                            <img src="@model.ImageUrl" alt="Preview"
+                                                 onerror="this.parentElement.style.display='none'" />
+                                        </div>
+                                    }
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">YouTube Video URL</label>
+                                    <InputText class="form-control" @bind-Value="model.VideoUrl"
+                                               placeholder="https://www.youtube.com/watch?v=XXXXX" />
+                                    <div class="form-text">YouTube watch links are automatically converted to embeds</div>
+                                </div>
+                            </div>
+
+                            <!-- ── Social / Contact Links ─────────────── -->
+                            <h6 class="form-section-title"><i class="fas fa-share-alt me-2 text-primary"></i>Social &amp; Contact Links</h6>
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label"><i class="fas fa-globe me-1 text-indigo"></i>Website</label>
+                                    <InputText class="form-control" @bind-Value="model.WebsiteUrl" placeholder="https://yoursite.com" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label"><i class="fab fa-facebook me-1" style="color:#1877f2"></i>Facebook</label>
+                                    <InputText class="form-control" @bind-Value="model.FacebookUrl" placeholder="https://facebook.com/yourpage" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label"><i class="fab fa-twitter me-1" style="color:#000"></i>Twitter / X</label>
+                                    <InputText class="form-control" @bind-Value="model.TwitterUrl" placeholder="https://twitter.com/yourhandle" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label"><i class="fab fa-linkedin me-1" style="color:#0a66c2"></i>LinkedIn</label>
+                                    <InputText class="form-control" @bind-Value="model.LinkedInUrl" placeholder="https://linkedin.com/company/name" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label"><i class="fab fa-instagram me-1" style="color:#e1306c"></i>Instagram</label>
+                                    <InputText class="form-control" @bind-Value="model.InstagramUrl" placeholder="https://instagram.com/yourhandle" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label"><i class="fab fa-youtube me-1" style="color:#ff0000"></i>YouTube Channel</label>
+                                    <InputText class="form-control" @bind-Value="model.YoutubeUrl" placeholder="https://youtube.com/yourchannel" />
+                                </div>
+                            </div>
+
+                            <!-- ── Venues ──────────────────────────────── -->
+                            <h6 class="form-section-title"><i class="fas fa-map-marker-alt me-2 text-danger"></i>Venues</h6>
+                            <div class="row g-3 mb-4">
+                                <div class="col-12">
+                                    @if (allVenues == null)
+                                    {
+                                        <div class="skeleton" style="height:40px"></div>
+                                    }
+                                    else
+                                    {
+                                        <div class="check-grid">
+                                            @foreach (var v in allVenues)
+                                            {
+                                                var sel = selectedVenues.Contains(v.Id);
+                                                <div class="check-item @(sel?"selected":"")" @onclick="() => ToggleVenue(v.Id)">
+                                                    <i class="fas fa-@(sel?"check-square text-primary":"square") fa-sm"></i>
+                                                    <div>
+                                                        <div style="font-size:.85rem;font-weight:600">@v.Name</div>
+                                                        <div style="font-size:.75rem;color:var(--muted)">@v.City · @v.Capacity cap</div>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                        <div class="mt-1 small text-muted">
+                                            Don't see a venue? <a href="/admin/venues/create" target="_blank">Add venue →</a>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- ── Activities ─────────────────────────── -->
+                            <h6 class="form-section-title"><i class="fas fa-tasks me-2 text-success"></i>Activities</h6>
+                            <div class="row g-3 mb-4">
+                                <div class="col-12">
+                                    @if (allActs == null)
+                                    {
+                                        <div class="skeleton" style="height:40px"></div>
+                                    }
+                                    else
+                                    {
+                                        <div class="check-grid">
+                                            @foreach (var a in allActs)
+                                            {
+                                                var sel = selectedActs.Contains(a.Id);
+                                                <div class="check-item @(sel?"selected":"")" @onclick="() => ToggleAct(a.Id)">
+                                                    <i class="fas fa-@(sel?"check-square text-primary":"square") fa-sm"></i>
+                                                    <div>
+                                                        <div style="font-size:.85rem;font-weight:600">@a.Name</div>
+                                                        <div style="font-size:.75rem;color:var(--muted)">@a.Type · @a.DurationMinutes min</div>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                        <div class="mt-1 small text-muted">
+                                            Don't see an activity? <a href="/admin/activities/create" target="_blank">Add activity →</a>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="d-flex gap-2 mt-2">
+                                <button type="submit" class="btn btn-primary" disabled="@saving">
+                                    @if (saving) { <span class="spinner-border spinner-border-sm me-2"></span> }
+                                    <i class="fas fa-save me-1"></i>Create Event
+                                </button>
+                                <a href="/events" class="btn btn-outline-secondary">Cancel</a>
+                            </div>
+                        </EditForm>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private EventForm model = new() { EventDate = DateTime.Now.AddDays(7), MaxCapacity = 100 };
+    private List<Venue>?    allVenues;
+    private List<Activity>? allActs;
+    private HashSet<int> selectedVenues = new();
+    private HashSet<int> selectedActs   = new();
+    private string? err;
+    private bool saving;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Session.IsAuthenticated) { Nav.NavigateTo("/login"); return; }
+        allVenues = await VenueSvc.GetAllAsync();
+        allActs   = await ActSvc.GetAllAsync();
+    }
+
+    private void OnImageUrlChanged(ChangeEventArgs e)
+    {
+        model.ImageUrl = e.Value?.ToString();
+    }
+
+    private void ToggleVenue(int id) { if (!selectedVenues.Remove(id)) selectedVenues.Add(id); }
+    private void ToggleAct(int id)   { if (!selectedActs.Remove(id))   selectedActs.Add(id); }
+
+    private async Task HandleCreate()
+    {
+        saving = true; err = null;
+        try
+        {
+            var ev = new Event
+            {
+                Title        = model.Title,
+                Description  = model.Description,
+                Location     = model.Location,
+                EventDate    = model.EventDate.ToUniversalTime(),
+                MaxCapacity  = model.MaxCapacity,
+                Category     = model.Category,
+                ImageUrl     = model.ImageUrl?.Trim(),
+                VideoUrl     = model.VideoUrl?.Trim(),
+                WebsiteUrl   = model.WebsiteUrl?.Trim(),
+                FacebookUrl  = model.FacebookUrl?.Trim(),
+                TwitterUrl   = model.TwitterUrl?.Trim(),
+                LinkedInUrl  = model.LinkedInUrl?.Trim(),
+                InstagramUrl = model.InstagramUrl?.Trim(),
+                YoutubeUrl   = model.YoutubeUrl?.Trim()
+            };
+            await EventSvc.CreateEventAsync(ev, selectedVenues.ToList(), selectedActs.ToList());
+            Nav.NavigateTo("/events");
+        }
+        catch (Exception ex) { err = "Error: " + ex.Message; saving = false; }
+    }
+
+    private class EventForm
+    {
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Title is required")]
+        [System.ComponentModel.DataAnnotations.MaxLength(200)]
+        public string Title { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Description is required")]
+        public string Description { get; set; } = string.Empty;
+
+        public string Location { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Required]
+        public DateTime EventDate { get; set; }
+
+        [System.ComponentModel.DataAnnotations.Range(1, 100000)]
+        public int MaxCapacity { get; set; } = 100;
+
+        public string Category { get; set; } = "General";
+
+        // Media
+        public string? ImageUrl  { get; set; }
+        public string? VideoUrl  { get; set; }
+
+        // Social
+        public string? WebsiteUrl   { get; set; }
+        public string? FacebookUrl  { get; set; }
+        public string? TwitterUrl   { get; set; }
+        public string? LinkedInUrl  { get; set; }
+        public string? InstagramUrl { get; set; }
+        public string? YoutubeUrl   { get; set; }
+    }
+}

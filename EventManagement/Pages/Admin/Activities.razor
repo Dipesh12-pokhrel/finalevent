@@ -1,0 +1,112 @@
+@page "/admin/activities"
+@inject ActivityService ActSvc
+@inject SessionService Session
+@inject NavigationManager Nav
+
+<PageTitle>Manage Activities – EventHub</PageTitle>
+
+@if (!Session.IsAdmin)
+{
+    <div class="container mt-5"><div class="alert alert-danger"><i class="fas fa-ban me-2"></i>Access denied.</div></div>
+}
+else
+{
+    <div class="container-fluid">
+        <div class="page-header">
+            <div>
+                <h2 class="section-title mb-1"><i class="fas fa-tasks text-primary me-2"></i>Activities</h2>
+                <p class="section-subtitle mb-0">Manage event activities: workshops, talks, games, and more</p>
+            </div>
+            <a href="/admin/activities/create" class="btn btn-primary"><i class="fas fa-plus me-1"></i>Add Activity</a>
+        </div>
+
+        @if (!string.IsNullOrEmpty(msg))
+        {
+            <div class="alert alert-@msgType alert-dismissible">@msg <button type="button" class="btn-close" @onclick="() => msg = null"></button></div>
+        }
+
+        @if (acts == null)
+        {
+            <div class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+        }
+        else if (!acts.Any())
+        {
+            <div class="empty-state">
+                <div class="empty-state-icon"><i class="fas fa-tasks"></i></div>
+                <h6>No activities yet</h6>
+                <a href="/admin/activities/create" class="btn btn-primary mt-2"><i class="fas fa-plus me-1"></i>Add First Activity</a>
+            </div>
+        }
+        else
+        {
+            <div class="card">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Duration</th>
+                                <th>Description</th>
+                                <th>Events</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var a in acts)
+                            {
+                                var tc = "act-" + a.Type.ToLower();
+                                <tr style="animation:fadeInUp .4s ease both">
+                                    <td class="text-muted small">@a.Id</td>
+                                    <td class="fw-600">@a.Name</td>
+                                    <td><span class="pill-tag @tc">@a.Type</span></td>
+                                    <td class="small"><i class="fas fa-clock text-muted me-1"></i>@a.DurationMinutes min</td>
+                                    <td class="small text-muted">
+                                        @(string.IsNullOrEmpty(a.Description) ? "—" : (a.Description.Length > 60 ? a.Description[..60] + "…" : a.Description))
+                                    </td>
+                                    <td>
+                                        <span class="badge" style="background:#e0e7ff;color:#4338ca">@a.EventActivities.Count</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="/admin/activities/edit/@a.Id" class="btn btn-outline-warning" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <button class="btn btn-outline-danger" @onclick="() => DeleteAct(a.Id)" disabled="@deleting" title="Delete">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private List<Activity>? acts;
+    private string? msg;
+    private string msgType = "success";
+    private bool deleting;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Session.IsAuthenticated) { Nav.NavigateTo("/login"); return; }
+        acts = await ActSvc.GetAllAsync();
+    }
+
+    private async Task DeleteAct(int id)
+    {
+        deleting = true;
+        var ok = await ActSvc.DeleteAsync(id);
+        msg = ok ? "Activity deleted." : "Could not delete (may be linked to events).";
+        msgType = ok ? "success" : "danger";
+        acts = await ActSvc.GetAllAsync();
+        deleting = false;
+    }
+}

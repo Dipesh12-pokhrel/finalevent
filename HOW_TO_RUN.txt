@@ -1,0 +1,83 @@
+==================================================
+  EventHub - Event Management System (.NET 8 Blazor Server)
+==================================================
+
+PREREQUISITES
+-------------
+- .NET 8 SDK  →  https://dotnet.microsoft.com/download/dotnet/8.0
+- Visual Studio 2022 (optional) OR VS Code with C# extension
+
+HOW TO RUN
+----------
+1. Open a terminal / command prompt
+2. Navigate to the project folder:
+     cd EventManagement
+
+3. Restore packages:
+     dotnet restore
+
+4. Run the app:
+     dotnet run
+
+5. Open your browser at:
+     http://localhost:5000
+
+   (The database is created and seeded automatically on first run)
+
+DEFAULT ADMIN LOGIN
+-------------------
+  Email   : admin@event.com
+  Password: Admin@123
+
+FEATURES
+--------
+  ✅ User Registration & Login
+  ✅ Browse & Search Events (filter by category, date)
+  ✅ Event Detail page with registration/unregistration
+  ✅ My Registrations page
+  ✅ Admin Dashboard (stats + full event table)
+  ✅ Admin: Create / Edit / Delete Events
+  ✅ SQLite database (file: eventmanagement.db)
+  ✅ Seeded with 3 sample events
+
+PROJECT STRUCTURE
+-----------------
+  EventManagement/
+  ├── Data/
+  │   ├── AppDbContext.cs         - EF Core DbContext
+  │   └── Models/
+  │       ├── User.cs
+  │       ├── Event.cs
+  │       └── EventRegistration.cs
+  ├── Services/
+  │   ├── AuthService.cs          - Login / Register logic
+  │   ├── SessionService.cs       - Holds current logged-in user
+  │   ├── EventService.cs         - CRUD for events
+  │   └── RegistrationService.cs  - Event registration logic
+  ├── Pages/
+  │   ├── Index.razor             - Home page
+  │   ├── Login.razor
+  │   ├── Register.razor
+  │   ├── MyRegistrations.razor
+  │   ├── Events/
+  │   │   ├── EventList.razor     - /events
+  │   │   ├── EventDetail.razor   - /events/{id}
+  │   │   ├── EventCreate.razor   - /events/create  (admin)
+  │   │   ├── EventEdit.razor     - /events/edit/{id}  (admin)
+  │   │   └── EventDelete.razor   - /events/delete/{id}  (admin)
+  │   └── Admin/
+  │       └── Dashboard.razor     - /admin  (admin only)
+  ├── Shared/
+  │   ├── MainLayout.razor
+  │   └── NavMenu.razor
+  ├── Migrations/                 - EF Core migration files
+  ├── Program.cs                  - App startup & DI setup
+  └── appsettings.json            - SQLite connection string
+
+TECH STACK
+----------
+  - ASP.NET Core 8 Blazor Server
+  - Entity Framework Core 8 + SQLite
+  - BCrypt.Net-Next (password hashing)
+  - Bootstrap 5.3 + Font Awesome 6
+==================================================

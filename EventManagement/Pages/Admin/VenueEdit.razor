@@ -1,0 +1,103 @@
+@page "/admin/venues/edit/{Id:int}"
+@inject VenueService VenueSvc
+@inject SessionService Session
+@inject NavigationManager Nav
+
+<PageTitle>Edit Venue – EventHub</PageTitle>
+
+@if (!Session.IsAdmin) { <div class="container mt-5"><div class="alert alert-danger"><i class="fas fa-ban me-2"></i>Access denied.</div></div> }
+else if (model == null) { <div class="container text-center py-5"><div class="spinner-border text-primary"></div></div> }
+else
+{
+    <div class="container">
+        <nav aria-label="breadcrumb" class="mt-2 mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/admin">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="/admin/venues">Venues</a></li>
+                <li class="breadcrumb-item active">Edit</li>
+            </ol>
+        </nav>
+        <div class="row justify-content-center">
+            <div class="col-lg-7">
+                <div class="card">
+                    <div class="card-header py-3" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff">
+                        <h5 class="mb-0"><i class="fas fa-edit me-2"></i>Edit Venue</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        @if (!string.IsNullOrEmpty(err)) { <div class="alert alert-danger">@err</div> }
+                        <EditForm Model="model" OnValidSubmit="HandleEdit">
+                            <DataAnnotationsValidator />
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label class="form-label">Venue Name *</label>
+                                    <InputText class="form-control" @bind-Value="model.Name" />
+                                    <ValidationMessage For="@(() => model.Name)" class="text-danger small" />
+                                </div>
+                                <div class="col-md-8">
+                                    <label class="form-label">Address *</label>
+                                    <InputText class="form-control" @bind-Value="model.Address" />
+                                    <ValidationMessage For="@(() => model.Address)" class="text-danger small" />
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">City</label>
+                                    <InputText class="form-control" @bind-Value="model.City" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Capacity *</label>
+                                    <InputNumber class="form-control" @bind-Value="model.Capacity" />
+                                    <ValidationMessage For="@(() => model.Capacity)" class="text-danger small" />
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Description</label>
+                                    <InputTextArea class="form-control" @bind-Value="model.Description" rows="3" />
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2 mt-4">
+                                <button type="submit" class="btn btn-warning" disabled="@saving">
+                                    @if (saving) { <span class="spinner-border spinner-border-sm me-2"></span> }
+                                    <i class="fas fa-save me-1"></i>Save Changes
+                                </button>
+                                <a href="/admin/venues" class="btn btn-outline-secondary">Cancel</a>
+                            </div>
+                        </EditForm>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+    private VenueForm? model;
+    private string? err;
+    private bool saving;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!Session.IsAuthenticated) { Nav.NavigateTo("/login"); return; }
+        var v = await VenueSvc.GetByIdAsync(Id);
+        if (v == null) { Nav.NavigateTo("/admin/venues"); return; }
+        model = new VenueForm { Name = v.Name, Address = v.Address, City = v.City, Capacity = v.Capacity, Description = v.Description };
+    }
+
+    private async Task HandleEdit()
+    {
+        saving = true; err = null;
+        try
+        {
+            await VenueSvc.UpdateAsync(new Venue { Id = Id, Name = model!.Name, Address = model.Address, City = model.City, Capacity = model.Capacity, Description = model.Description });
+            Nav.NavigateTo("/admin/venues");
+        }
+        catch (Exception ex) { err = "Error: " + ex.Message; saving = false; }
+    }
+
+    private class VenueForm
+    {
+        [System.ComponentModel.DataAnnotations.Required] public string Name { get; set; } = string.Empty;
+        [System.ComponentModel.DataAnnotations.Required] public string Address { get; set; } = string.Empty;
+        public string City { get; set; } = string.Empty;
+        [System.ComponentModel.DataAnnotations.Range(1,100000)] public int Capacity { get; set; }
+        public string? Description { get; set; }
+    }
+}

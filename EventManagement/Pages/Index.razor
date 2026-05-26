@@ -1,0 +1,185 @@
+@page "/"
+@inject EventService EventSvc
+@inject SessionService Session
+
+<PageTitle>EventHub – Home</PageTitle>
+
+<!-- ── Hero ─────────────────────────────────────── -->
+<div class="hero-section" style="padding:3.5rem 0 4rem">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-7 hero-content">
+                <div class="hero-badge">
+                    <span class="hero-dot"></span> Live Events Platform
+                </div>
+                <h1 class="hero-title mb-3">
+                    Discover &amp; Join<br/>
+                    <span style="color:rgba(255,255,255,.82)">Amazing Events</span>
+                </h1>
+                <p class="hero-subtitle mb-4">
+                    Conferences, workshops, meetups and more —<br/>register in seconds.
+                </p>
+                <div class="d-flex flex-wrap gap-2 mb-4">
+                    @if (!Session.IsAuthenticated)
+                    {
+                        <a href="/register" class="btn btn-light btn-lg px-4" style="color:#6366f1;font-weight:700;border-radius:50px">
+                            <i class="fas fa-rocket me-2"></i>Get Started Free
+                        </a>
+                        <a href="/events" class="btn btn-outline-light btn-lg px-4" style="border-radius:50px">
+                            <i class="fas fa-compass me-2"></i>Explore Events
+                        </a>
+                    }
+                    else
+                    {
+                        <a href="/events" class="btn btn-light btn-lg px-4" style="color:#6366f1;font-weight:700;border-radius:50px">
+                            <i class="fas fa-compass me-2"></i>Browse All Events
+                        </a>
+                        @if (Session.IsAdmin)
+                        {
+                            <a href="/events/create" class="btn btn-outline-light btn-lg px-4" style="border-radius:50px">
+                                <i class="fas fa-plus me-2"></i>Create Event
+                            </a>
+                        }
+                    }
+                </div>
+                @if (events != null)
+                {
+                    <div class="d-flex flex-wrap">
+                        <span class="hero-stat"><i class="fas fa-calendar-alt"></i> @events.Count Upcoming</span>
+                        <span class="hero-stat"><i class="fas fa-users"></i> @events.Sum(e=>e.Registrations.Count) Registered</span>
+                        <span class="hero-stat"><i class="fas fa-map-marker-alt"></i> Multiple Cities</span>
+                    </div>
+                }
+            </div>
+            <!-- decorative floating cards -->
+            <div class="col-lg-5 d-none d-lg-flex flex-column align-items-center gap-3 pt-3">
+                <div class="floating-card" style="background:rgba(255,255,255,.15);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.2);border-radius:18px;padding:1.2rem 1.5rem;color:#fff;min-width:240px">
+                    <div style="font-size:1.8rem;margin-bottom:.4rem">🚀</div>
+                    <div style="font-weight:700;margin-bottom:.2rem">Tech Conference 2026</div>
+                    <div style="font-size:.78rem;opacity:.75"><i class="fas fa-calendar me-1"></i>Aug 15, 2026 · Kathmandu</div>
+                    <div style="background:rgba(255,255,255,.2);border-radius:50px;height:5px;margin-top:.7rem">
+                        <div style="width:68%;background:#fff;border-radius:50px;height:100%"></div>
+                    </div>
+                    <div style="font-size:.72rem;opacity:.6;margin-top:.3rem">340 / 500 seats</div>
+                </div>
+                <div class="floating-card-2" style="background:rgba(255,255,255,.1);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.15);border-radius:14px;padding:.9rem 1.2rem;color:#fff">
+                    <div style="font-weight:600;font-size:.88rem;margin-bottom:.2rem">✅ Registration Confirmed</div>
+                    <div style="font-size:.78rem;opacity:.72">Startup Pitch Night · Sep 5</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Events Grid ───────────────────────────────── -->
+<div class="container mt-4">
+    @if (events == null)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary"></div>
+            <p class="mt-3 text-muted">Loading events…</p>
+        </div>
+    }
+    else if (!events.Any())
+    {
+        <div class="empty-state">
+            <div class="empty-state-icon"><i class="fas fa-calendar-times"></i></div>
+            <h5>No upcoming events yet</h5>
+            <p class="small">Check back soon for exciting events.</p>
+            @if (Session.IsAdmin)
+            {
+                <a href="/events/create" class="btn btn-primary mt-2"><i class="fas fa-plus me-1"></i>Create First Event</a>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <div>
+                <h2 class="section-title mb-1"><i class="fas fa-fire text-danger me-2"></i>Upcoming Events</h2>
+                <p class="section-subtitle mb-0">Join the most exciting events happening near you</p>
+            </div>
+            <a href="/events" class="btn btn-outline-primary">View All <i class="fas fa-arrow-right ms-1"></i></a>
+        </div>
+
+        <div class="row g-4">
+            @foreach (var ev in events.Take(6))
+            {
+                var catKey   = (ev.Category ?? "general").ToLower().Replace(" ", "");
+                var catClass = "cat-" + catKey;
+                var icon     = ev.Category switch {
+                    "Technology"    => "fa-microchip",
+                    "Business"      => "fa-briefcase",
+                    "Health"        => "fa-heartbeat",
+                    "Education"     => "fa-graduation-cap",
+                    "Entertainment" => "fa-music",
+                    _               => "fa-calendar-alt"
+                };
+                var fill = ev.MaxCapacity > 0 ? (int)((double)ev.Registrations.Count / ev.MaxCapacity * 100) : 0;
+                var venues = ev.EventVenues.Select(v => v.Venue.Name).ToList();
+                <div class="col-md-4">
+                    <div class="card h-100 event-card">
+                        <div class="event-img-wrap @catClass">
+                            @if (!string.IsNullOrEmpty(ev.ImageUrl))
+                            {
+                                <img src="@ev.ImageUrl" alt="@ev.Title"
+                                     onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+                                <div class="event-img-fallback" style="display:none">
+                                    <i class="fas @icon fa-2x"></i>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="event-img-fallback">
+                                    <i class="fas @icon fa-2x"></i>
+                                </div>
+                            }
+                            <div class="event-img-overlay">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="badge" style="background:rgba(255,255,255,.25);color:#fff;backdrop-filter:blur(4px)">@ev.Category</span>
+                                    <span style="color:rgba(255,255,255,.9);font-size:.78rem;background:rgba(0,0,0,.35);padding:.15rem .5rem;border-radius:50px">
+                                        @ev.Registrations.Count/@ev.MaxCapacity
+                                    </span>
+                                </div>
+                                <div class="cap-bar mt-1"><div class="cap-bar-fill" style="width:@fill%"></div></div>
+                            </div>
+                        </div>
+                        <div class="card-body d-flex flex-column p-3">
+                            <h5 class="fw-bold mb-2" style="font-size:.98rem">@ev.Title</h5>
+                            <p class="text-muted small flex-grow-1 mb-2" style="font-size:.83rem;line-height:1.5">
+                                @(ev.Description.Length > 100 ? ev.Description[..100] + "…" : ev.Description)
+                            </p>
+                            @if (venues.Any())
+                            {
+                                <div class="mb-2">
+                                    @foreach (var v in venues.Take(2))
+                                    {
+                                        <span class="pill-tag venue"><i class="fas fa-map-marker-alt"></i>@v</span>
+                                    }
+                                </div>
+                            }
+                            <div class="small text-muted">
+                                <i class="fas fa-clock text-primary me-1"></i>
+                                @ev.EventDate.ToLocalTime().ToString("MMM dd, yyyy · h:mm tt")
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent border-0 px-3 pb-3 pt-0">
+                            <a href="/events/@ev.Id" class="btn btn-primary btn-sm w-100">
+                                <i class="fas fa-eye me-1"></i>View Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<Event>? events;
+    protected override async Task OnInitializedAsync()
+    {
+        var all = await EventSvc.GetAllEventsAsync();
+        events = all.Where(e => e.EventDate >= DateTime.UtcNow).OrderBy(e => e.EventDate).ToList();
+    }
+}
